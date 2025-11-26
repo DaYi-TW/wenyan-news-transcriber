@@ -20,16 +20,12 @@ SYSTEM_PROMPT = """
 - 文辭典雅，不落俗套
 
 我將給汝當代新聞，汝需將其轉寫成一篇古人之評議或古風短文。
+請用繁體中文回答。
 """
 
 # ---------------------------
-# Streamlit UI
+# 範例新聞內容
 # ---------------------------
-
-st.title("📜 文言文大師：古風新聞轉寫器")
-st.write("輸入任何現代新聞，我將替你改寫為古代文士筆調。")
-
-# 範例內容
 EXAMPLE_TEXT = """館長（陳之漢）在板橋的蛋捲店今年10月2日開幕，不過先前館長捲入「大師兄」李慶元、小瑋（小偉）、吳明鑒三方的毀滅式爆料，相關音檔瘋傳，15日館長直播已透露要收回蛋捲店，如今民眾則目擊陸續有機台被撤出，對此經營方大師兄也向《三立新聞網》回應了。
 
 「大師兄」李慶元今證實，蛋捲店的確已經歇業，目前與館長無雇傭關係存在。而先前大師兄曾在臉書為蛋捲店發文宣傳：「有關金元酥蛋捲配方製作研發，都是我本人李慶元（大師兄）親自操刀，沒有像外界所說是工廠拿貨或是貼牌」。
@@ -40,34 +36,37 @@ EXAMPLE_TEXT = """館長（陳之漢）在板橋的蛋捲店今年10月2日開�
 而先前館長在直播中也已經預告蛋捲店不做了，主要也是因蛋捲店捲入這一波爭議，所以他才決定收回不做，後續也已經在請律師處理，他強調自身都有股份。
 """
 
-# 輸入框
-news_text = st.text_area("📰 請輸入新聞內容：", height=200)
+# ---------------------------
+# Streamlit App
+# ---------------------------
+
+st.title("📜 文言文大師：古風新聞轉寫器")
+
+# 初始化輸入框內容
+if "news_text" not in st.session_state:
+    st.session_state["news_text"] = ""
 
 # 範例按鈕
-if st.button("📌 插入範例新聞"):
-    news_text = EXAMPLE_TEXT
+if st.button("📌 放入範例新聞"):
     st.session_state["news_text"] = EXAMPLE_TEXT
 
-# 從 session 取值，避免重新整理清空內容
-if "news_text" in st.session_state:
-    if st.session_state["news_text"] != news_text:
-        st.session_state["news_text"] = news_text
-    news_text = st.session_state["news_text"]
+# 單一輸入框
+news_text = st.text_area("📰 新聞內容：", value=st.session_state["news_text"], height=260)
 
-# 再顯示一次輸入框（讓範例即時更新）
-news_text = st.text_area("📰 新聞內容（可修改）：", value=news_text, height=220)
-token = os.getenv("HF_TOKEN")
-# HuggingFace client
-client = InferenceClient(api_key=token)
+# 更新 session state
+st.session_state["news_text"] = news_text
 
-# 執行文言文生成
+# HuggingFace  Client
+client = InferenceClient(api_key=os.environ.get("HF_TOKEN"))
+
+# 生成文言文
 if st.button("✨ 產生文言文版本"):
     if not news_text.strip():
         st.warning("請先輸入新聞內容！")
     else:
         with st.spinner("生成中，請稍候..."):
             completion = client.chat.completions.create(
-                model="openai/gpt-oss-20b:groq",
+                model="HuggingFaceH4/zephyr-7b-beta",
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": news_text},

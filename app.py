@@ -66,7 +66,7 @@ if st.button("✨ 產生文言文版本"):
     else:
         with st.spinner("生成中，請稍候..."):
             completion = client.chat.completions.create(
-                model="HuggingFaceH4/zephyr-7b-beta",
+                model="openai/gpt-oss-20b:groq",
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": news_text},

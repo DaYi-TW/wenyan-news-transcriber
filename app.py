@@ -56,9 +56,9 @@ if "news_text" in st.session_state:
 
 # 再顯示一次輸入框（讓範例即時更新）
 news_text = st.text_area("📰 新聞內容（可修改）：", value=news_text, height=220)
-
+token = os.getenv("HF_TOKEN")
 # HuggingFace client
-client = InferenceClient(api_key="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")
+client = InferenceClient(api_key=token)
 
 # 執行文言文生成
 if st.button("✨ 產生文言文版本"):
